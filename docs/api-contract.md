@@ -50,7 +50,8 @@ POST /api/analyze
   "envVariables": ["DATABASE_URL"],
   "scripts": {
     "dev": "next dev",
-    "build": "next build"
+    "build": "next build",
+    "start": "next start"
   }
 }
 ```
