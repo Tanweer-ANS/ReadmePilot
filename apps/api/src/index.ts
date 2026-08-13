@@ -25,6 +25,9 @@ app.use('/api/generate', generateRouter)
 
 const PORT = process.env.PORT || 4000
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`🚀 ReadmePilot API running on http://localhost:${PORT}`)
 })
+
+// Increase server timeout to 10 minutes to accommodate long Ollama responses
+server.setTimeout(10 * 60 * 1000)
