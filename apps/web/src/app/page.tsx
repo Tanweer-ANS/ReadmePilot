@@ -1,11 +1,17 @@
+'use client'
+
 import { GenerateButton } from '@/components/generate-button'
+import { MarkdownPreview } from '@/components/markdown-preview'
 import { RepoInput } from '@/components/repo-input'
+import { useGenerationStore } from '@/store/generation-store'
 
 export default function HomePage() {
+  const { result, error } = useGenerationStore()
+
   return (
-    <main className="min-h-screen bg-linear-to-b from-white to-gray-50 dark:from-black dark:to-gray-950">
-      <div className="mx-auto flex min-h-screen max-w-4xl flex-col items-center justify-center px-6 text-center">
-        <div className="space-y-6">
+    <main className="min-h-screen bg-gradient-to-b from-white to-gray-50 px-6 py-12 dark:from-black dark:to-gray-950">
+      <div className="mx-auto max-w-5xl space-y-10">
+        <div className="text-center space-y-6">
           <div className="inline-flex items-center rounded-full border border-gray-200 bg-white px-4 py-2 text-sm text-gray-600 shadow-sm dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300">
             🚀 AI-powered GitHub documentation generator
           </div>
@@ -15,40 +21,40 @@ export default function HomePage() {
           </h1>
 
           <p className="mx-auto max-w-2xl text-lg text-gray-600 dark:text-gray-400">
-            Paste any public GitHub repository URL and automatically generate a professional README, installation guide, environment variable documentation, API reference, and deployment instructions.
+            Paste any public GitHub repository URL and automatically generate professional project documentation.
           </p>
         </div>
 
-        <div className="mt-10 w-full space-y-6">
+        <div className="space-y-6">
           <RepoInput />
 
           <div className="flex justify-center">
             <GenerateButton />
           </div>
+
+          {error && (
+            <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
+              {error}
+            </div>
+          )}
         </div>
 
-        <div className="mt-16 grid w-full max-w-3xl gap-4 text-left sm:grid-cols-3">
-          <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-gray-900">
-            <h3 className="font-semibold text-gray-900 dark:text-white">README Generation</h3>
-            <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-              Generate clean, professional, GitHub-ready README files.
-            </p>
-          </div>
+        {result && (
+          <section className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                  Generated Documentation
+                </h2>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Framework: {result.analysis.framework} · Package Manager: {result.analysis.packageManager}
+                </p>
+              </div>
+            </div>
 
-          <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-gray-900">
-            <h3 className="font-semibold text-gray-900 dark:text-white">API Documentation</h3>
-            <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-              Detect common backend frameworks and create endpoint documentation.
-            </p>
-          </div>
-
-          <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-gray-900">
-            <h3 className="font-semibold text-gray-900 dark:text-white">Deployment Guides</h3>
-            <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-              Generate Vercel, Render, Railway, and Docker deployment instructions automatically.
-            </p>
-          </div>
-        </div>
+            <MarkdownPreview content={result.documentation} />
+          </section>
+        )}
       </div>
     </main>
   )

@@ -2,20 +2,32 @@
 
 import { Loader2, Sparkles } from 'lucide-react'
 import { useGenerationStore } from '@/store/generation-store'
+import { generateDocumentation } from '@/lib/api'
 
 export function GenerateButton() {
-  const { repoUrl, loading, setLoading } = useGenerationStore()
+  const {
+    repoUrl,
+    loading,
+    setLoading,
+    setError,
+    setResult,
+  } = useGenerationStore()
 
   const handleGenerate = async () => {
     if (!repoUrl.trim()) return
 
-    setLoading(true)
+    try {
+      setLoading(true)
+      setError(null)
 
-    await new Promise((resolve) => setTimeout(resolve, 2000))
+      const result = await generateDocumentation(repoUrl)
 
-    setLoading(false)
-
-    alert(`Repository queued for analysis:\\n${repoUrl}`)
+      setResult(result)
+    } catch (error: any) {
+      setError(error.message)
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (

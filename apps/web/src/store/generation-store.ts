@@ -1,28 +1,39 @@
 import { create } from 'zustand'
 
-type GeneratedDocs = {
-  readme: string
-  installation: string
-  environment: string
-  deployment: string
-  apiDocs: string
+export type GeneratedResult = {
+  documentation: string
+  repository: {
+    name: string
+    description: string
+  }
+  analysis: {
+    framework: string
+    packageManager: string
+    envVariables: string[]
+    deploymentTargets: string[]
+  }
 }
 
 type GenerationState = {
   repoUrl: string
   loading: boolean
-  docs: GeneratedDocs | null
+  error: string | null
+  result: GeneratedResult | null
+
   setRepoUrl: (url: string) => void
   setLoading: (loading: boolean) => void
-  setDocs: (docs: GeneratedDocs | null) => void
+  setError: (error: string | null) => void
+  setResult: (result: GeneratedResult | null) => void
 }
 
 export const useGenerationStore = create<GenerationState>((set) => ({
   repoUrl: '',
   loading: false,
-  docs: null,
+  error: null,
+  result: null,
 
   setRepoUrl: (url) => set({ repoUrl: url }),
   setLoading: (loading) => set({ loading }),
-  setDocs: (docs) => set({ docs }),
+  setError: (error) => set({ error }),
+  setResult: (result) => set({ result }),
 }))
