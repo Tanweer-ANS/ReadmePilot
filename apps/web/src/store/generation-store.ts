@@ -3,11 +3,14 @@ import { create } from 'zustand'
 export type GeneratedResult = {
   documentation: string
   repository: {
+    fullName: string
     name: string
     description: string
+    stars: number
+    defaultBranch: string
   }
   analysis: {
-    framework: string
+    frameworks: string[]
     packageManager: string
     envVariables: string[]
     deploymentTargets: string[]

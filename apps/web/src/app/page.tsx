@@ -5,6 +5,10 @@ import { MarkdownPreview } from '@/components/markdown-preview'
 import { RepoInput } from '@/components/repo-input'
 import { useGenerationStore } from '@/store/generation-store'
 
+import { ResultsTabs } from '@/components/results-tabs'
+import { RepoSummary } from '@/components/repo-summary'
+import { CopyButton } from '@/components/copy-button'
+
 export default function HomePage() {
   const { result, error } = useGenerationStore()
 
@@ -40,19 +44,28 @@ export default function HomePage() {
         </div>
 
         {result && (
-          <section className="space-y-4">
-            <div className="flex items-center justify-between">
+          <section className="mx-auto mt-12 max-w-7xl px-6 pb-20">
+            <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                <h2 className="text-2xl font-bold text-white">
                   Generated Documentation
                 </h2>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Framework: {result.analysis.framework} · Package Manager: {result.analysis.packageManager}
+                <p className="mt-1 text-sm text-gray-400">
+                  {result.repository.name}
                 </p>
               </div>
+
+              <CopyButton text={result.documentation} />
             </div>
 
-            <MarkdownPreview content={result.documentation} />
+            <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
+              <RepoSummary
+                repository={result.repository}
+                analysis={result.analysis}
+              />
+
+              <ResultsTabs documentation={result.documentation} />
+            </div>
           </section>
         )}
       </div>

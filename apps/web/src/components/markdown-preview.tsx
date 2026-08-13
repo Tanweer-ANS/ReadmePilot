@@ -2,15 +2,43 @@
 
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import { CodeBlock } from './code-block'
 
-type Props = {
+interface MarkdownPreviewProps {
   content: string
 }
 
-export function MarkdownPreview({ content }: Props) {
+export function MarkdownPreview({ content }: MarkdownPreviewProps) {
   return (
-    <div className="prose prose-gray dark:prose-invert max-w-none rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
-      <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
-    </div>
+    <article className="prose prose-invert max-w-none prose-pre:p-0 prose-pre:bg-transparent">
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm]}
+        components={{
+          code({ className, children, ...props }) {
+            const match = /language-(\w+)/.exec(className || '')
+
+            if (match) {
+              return (
+                <CodeBlock
+                  language={match[1]}
+                  value={String(children).replace(/\n$/, '')}
+                />
+              )
+            }
+
+            return (
+              <code
+                className="rounded bg-gray-800 px-1.5 py-0.5 text-sm text-cyan-300"
+                {...props}
+              >
+                {children}
+              </code>
+            )
+          },
+        }}
+      >
+        {content}
+      </ReactMarkdown>
+    </article>
   )
 }
