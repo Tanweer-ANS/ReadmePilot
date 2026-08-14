@@ -8,6 +8,9 @@ import { analyzeRouter } from './routes/analyze.route'
 import { generateRouter } from './routes/generate.route'
 import { generateWithGemini } from './services/gemini.service'
 
+import timeout from 'express-timeout-handler'
+import { logger } from './middleware/logger'
+
 
 
 const app = express()
@@ -24,6 +27,20 @@ app.use(express.json())
 app.use('/health', healthRouter)
 app.use('/api/analyze', analyzeRouter)
 app.use('/api/generate', generateRouter)
+
+app.use(
+  timeout.handler({
+    timeout: 60000,
+    onTimeout: (req, res) => {
+      res.status(504).json({
+        success: false,
+        error: 'Request timed out while generating documentation',
+      })
+    },
+  })
+)
+
+app.use(logger)
 
 app.get('/test-gemini', async (_req, res) => {
   try {

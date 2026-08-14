@@ -2,7 +2,7 @@
 
 import { Loader2, Sparkles } from 'lucide-react'
 import { useGenerationStore } from '@/store/generation-store'
-import { generateDocumentation } from '@/lib/api'
+import { generateDocumentationApi } from '@/lib/api'
 
 export function GenerateButton() {
   const {
@@ -20,7 +20,7 @@ export function GenerateButton() {
       setLoading(true)
       setError(null)
 
-      const result = await generateDocumentation(repoUrl)
+      const result = await generateDocumentationApi(repoUrl)
 
       setResult(result)
     } catch (error: any) {

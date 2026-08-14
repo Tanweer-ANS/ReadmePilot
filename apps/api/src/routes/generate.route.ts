@@ -32,11 +32,27 @@ generateRouter.post('/', async (req, res) => {
       documentation,
     })
   } catch (error: any) {
-    res.status(500).json({
-      error: {
-        message: error.message || 'Documentation generation failed',
-        code: 'GENERATION_FAILED',
-      },
+    console.error('Generation error:', error)
+
+    const message = error?.message || 'Unknown error'
+
+    if (message.includes('rate limit')) {
+      return res.status(429).json({
+        success: false,
+        error: 'GitHub API rate limit exceeded. Please try again later.',
+      })
+    }
+
+    if (message.includes('503') || message.includes('high demand')) {
+      return res.status(503).json({
+        success: false,
+        error: 'Gemini API is currently under heavy load. Please try again in a few seconds.',
+      })
+    }
+
+    return res.status(500).json({
+      success: false,
+      error: message,
     })
   }
 })

@@ -1,6 +1,11 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL
+import type { GeneratedResult } from '@/store/generation-store'
 
-export async function generateDocumentation(repoUrl: string) {
+const API_URL =
+  process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'
+
+export async function generateDocumentationApi(
+  repoUrl: string
+): Promise<GeneratedResult> {
   const response = await fetch(`${API_URL}/api/generate`, {
     method: 'POST',
     headers: {
@@ -11,8 +16,8 @@ export async function generateDocumentation(repoUrl: string) {
 
   const data = await response.json()
 
-  if (!response.ok) {
-    throw new Error(data.error?.message || 'Generation failed')
+  if (!response.ok || !data.success) {
+    throw new Error(data.error || 'Generation failed')
   }
 
   return data

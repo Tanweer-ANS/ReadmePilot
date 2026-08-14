@@ -7,10 +7,17 @@ import { RepoSummary } from '@/components/repo-summary'
 import { CopyButton } from '@/components/copy-button'
 import { useGenerationStore } from '@/store/generation-store'
 import { DownloadButton } from '@/components/download-button'
-import { ExportZipButton } from '@/components/export-zip-button'
+import { ExportZipButton } from '@/components/export-zip-button';
+import { GenerationLoading } from '@/components/generation-loading'
+import { ResultSkeleton } from '@/components/result-skeleton'
 
 export default function HomePage() {
   const {
+    repoUrl,
+    setRepoUrl,
+    generateDocumentation,
+    loading,
+    loadingStep,
     error,
     result,
   } = useGenerationStore()
@@ -52,12 +59,47 @@ export default function HomePage() {
           </div>
 
           {error && (
-            <div className="mt-6 w-full max-w-3xl rounded-2xl border border-red-500/20 bg-red-500/10 p-4 text-left text-sm text-red-300">
-              {error}
+            <div className="mt-6 w-full max-w-3xl rounded-2xl border border-red-500/20 bg-red-500/10 p-4">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="font-medium text-red-300">Generation failed</p>
+                  <p className="mt-1 text-sm text-red-200">{error}</p>
+                </div>
+
+                <button
+                  onClick={generateDocumentation}
+                  className="rounded-lg bg-red-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-red-400"
+                >
+                  Retry
+                </button>
+              </div>
             </div>
           )}
         </div>
       </section>
+
+      {loading && (
+        <section className="mx-auto max-w-6xl px-6 pb-12">
+          <div className="grid gap-6 lg:grid-cols-[360px_1fr]">
+            <GenerationLoading step={loadingStep} />
+            <ResultSkeleton />
+          </div>
+        </section>
+      )}
+
+      {!loading && !result && (
+        <section className="mx-auto max-w-4xl px-6 pb-20">
+          <div className="rounded-2xl border border-dashed border-gray-800 bg-gray-950 p-12 text-center">
+            <h3 className="text-xl font-semibold text-white">
+              No documentation generated yet
+            </h3>
+
+            <p className="mt-3 text-gray-400">
+              Paste a public GitHub repository URL above and click Generate Documentation to create a professional README, installation guide, deployment instructions, and API documentation.
+            </p>
+          </div>
+        </section>
+      )}
 
       {/* Result Section */}
       {result && (
@@ -131,7 +173,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      
+
     </main>
   )
 }
