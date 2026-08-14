@@ -10,7 +10,7 @@ export async function generateWithGemini(prompt: string) {
   const genAI = new GoogleGenerativeAI(apiKey)
 
   const model = genAI.getGenerativeModel({
-    model: 'gemini-3.5-flash',
+    model: 'gemini-3.5-flash-lite',
   })
 
   const result = await model.generateContent(prompt)

@@ -34,6 +34,7 @@ export async function getRepositoryInfo(repoUrl: string) {
     owner,
     repo,
     name: repository.name,
+    fullName: repository.full_name,
     description: repository.description || '',
     defaultBranch: repository.default_branch,
     stars: repository.stargazers_count,

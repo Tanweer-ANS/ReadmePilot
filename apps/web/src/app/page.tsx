@@ -1,74 +1,146 @@
 'use client'
 
-import { GenerateButton } from '@/components/generate-button'
-import { MarkdownPreview } from '@/components/markdown-preview'
 import { RepoInput } from '@/components/repo-input'
-import { useGenerationStore } from '@/store/generation-store'
-
+import { GenerateButton } from '@/components/generate-button'
 import { ResultsTabs } from '@/components/results-tabs'
 import { RepoSummary } from '@/components/repo-summary'
 import { CopyButton } from '@/components/copy-button'
+import { useGenerationStore } from '@/store/generation-store'
+import { DownloadButton } from '@/components/download-button'
 
 export default function HomePage() {
-  const { result, error } = useGenerationStore()
+  const {
+    error,
+    result,
+  } = useGenerationStore()
+  const repositoryName = result?.repository.fullName?.split('/').at(-1)
+    || result?.repository.name
+    || 'README'
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-white to-gray-50 px-6 py-12 dark:from-black dark:to-gray-950">
-      <div className="mx-auto max-w-5xl space-y-10">
-        <div className="text-center space-y-6">
-          <div className="inline-flex items-center rounded-full border border-gray-200 bg-white px-4 py-2 text-sm text-gray-600 shadow-sm dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300">
-            🚀 AI-powered GitHub documentation generator
+    <main className="min-h-screen bg-black text-white">
+      {/* Hero Section */}
+      <section className="relative overflow-hidden border-b border-gray-900">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(6,182,212,0.15),transparent_40%)]" />
+
+        <div className="relative mx-auto flex max-w-5xl flex-col items-center px-6 py-20 text-center">
+          <div className="mb-6 inline-flex items-center rounded-full border border-cyan-500/20 bg-cyan-500/10 px-4 py-1 text-sm text-cyan-300">
+            AI-Powered GitHub Documentation Generator
           </div>
 
-          <h1 className="text-5xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-6xl">
-            ReadmePilot
+          <h1 className="max-w-4xl text-4xl font-black tracking-tight text-white sm:text-5xl md:text-6xl">
+            Generate professional README files from any public GitHub repository
           </h1>
 
-          <p className="mx-auto max-w-2xl text-lg text-gray-600 dark:text-gray-400">
-            Paste any public GitHub repository URL and automatically generate professional project documentation.
+          <p className="mt-6 max-w-2xl text-lg leading-8 text-gray-400">
+            Paste a GitHub repository URL and let ReadmePilot analyze the project, detect frameworks, extract scripts, and generate polished developer documentation in seconds.
           </p>
-        </div>
 
-        <div className="space-y-6">
-          <RepoInput />
+          <div className="mt-10 w-full max-w-3xl rounded-3xl border border-gray-800 bg-gray-950/80 p-5 shadow-2xl shadow-cyan-500/5 backdrop-blur">
+            <div className="flex flex-col gap-4 sm:flex-row">
+              <div className="flex-1">
+                <RepoInput />
+              </div>
 
-          <div className="flex justify-center">
-            <GenerateButton />
+              <GenerateButton />
+            </div>
+
+            <p className="mt-3 text-left text-xs text-gray-500">
+              Try: https://github.com/expressjs/express
+            </p>
           </div>
 
           {error && (
-            <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
+            <div className="mt-6 w-full max-w-3xl rounded-2xl border border-red-500/20 bg-red-500/10 p-4 text-left text-sm text-red-300">
               {error}
             </div>
           )}
         </div>
+      </section>
 
-        {result && (
-          <section className="mx-auto mt-12 max-w-7xl px-6 pb-20">
-            <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <h2 className="text-2xl font-bold text-white">
-                  Generated Documentation
-                </h2>
-                <p className="mt-1 text-sm text-gray-400">
-                  {result.repository.name}
-                </p>
-              </div>
+      {/* Features */}
+      <section className="mx-auto max-w-6xl px-6 py-16">
+        <div className="mb-10 text-center">
+          <h2 className="text-3xl font-bold text-white">What ReadmePilot generates</h2>
+          <p className="mt-3 text-gray-400">
+            Everything needed for a portfolio-ready open-source project README.
+          </p>
+        </div>
 
+        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+          <FeatureCard
+            title="README.md"
+            description="Project overview, features, tech stack, installation steps, and usage examples."
+          />
+
+          <FeatureCard
+            title="Environment Docs"
+            description="Detects environment variables from .env.example files and documents them automatically."
+          />
+
+          <FeatureCard
+            title="Deployment Guide"
+            description="Identifies Vercel, Docker, Railway, and Render deployment configurations from the repository."
+          />
+
+          <FeatureCard
+            title="API & Scripts"
+            description="Extracts package.json scripts and generates developer-friendly command references."
+          />
+        </div>
+      </section>
+
+      {/* Result Section */}
+      {result && (
+        <section className="mx-auto max-w-7xl px-6 pb-20">
+          <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="text-2xl font-bold text-white">
+                Generated Documentation
+              </h2>
+
+              <p className="mt-1 text-sm text-gray-400">
+                {result.repository.name}
+              </p>
+            </div>
+
+            <div className="flex flex-wrap gap-3">
               <CopyButton text={result.documentation} />
-            </div>
 
-            <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
-              <RepoSummary
-                repository={result.repository}
-                analysis={result.analysis}
+              <DownloadButton
+                filename={`${repositoryName}.md`}
+                content={result.documentation}
               />
-
-              <ResultsTabs documentation={result.documentation} />
             </div>
-          </section>
-        )}
-      </div>
+          </div>
+
+          <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
+            <RepoSummary
+              repository={result.repository}
+              analysis={result.analysis}
+            />
+
+            <ResultsTabs documentation={result.documentation} />
+          </div>
+        </section>
+      )}
     </main>
+  )
+}
+
+interface FeatureCardProps {
+  title: string
+  description: string
+}
+
+function FeatureCard({ title, description }: FeatureCardProps) {
+  return (
+    <div className="rounded-2xl border border-gray-800 bg-gray-950 p-6 transition hover:border-cyan-500/30 hover:bg-gray-900">
+      <h3 className="text-lg font-semibold text-white">{title}</h3>
+
+      <p className="mt-3 text-sm leading-6 text-gray-400">
+        {description}
+      </p>
+    </div>
   )
 }
