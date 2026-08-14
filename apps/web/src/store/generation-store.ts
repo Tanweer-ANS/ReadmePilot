@@ -1,6 +1,7 @@
 
 import { create } from 'zustand'
 import { generateDocumentationApi } from '@/lib/api'
+import { saveGeneration } from '@/services/history.service'
 
 export type GeneratedResult = {
   documentation: string
@@ -82,18 +83,25 @@ export const useGenerationStore = create<GenerationState>((set, get) => ({
       // Actual API call
       const result = await generateDocumentationApi(repoUrl)
 
+      // Save to Supabase
+      try {
+        await saveGeneration(repoUrl, result)
+      } catch (saveError) {
+        console.error('Failed to save generation:', saveError)
+      }
+
       // Step 4: Finalizing
       set({
         result,
         loading: false,
         loadingStep: 4,
       })
-    } catch (error: any) {
+    } catch (error: unknown) {
       set({
         loading: false,
         loadingStep: 0,
         error:
-          error?.message ||
+          (error instanceof Error ? error.message : null) ||
           'Failed to generate documentation. Please try again.',
       })
     }

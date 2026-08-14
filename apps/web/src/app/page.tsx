@@ -1,19 +1,35 @@
+
 'use client'
+
+import { Suspense, useEffect } from 'react'
+import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 
 import { RepoInput } from '@/components/repo-input'
 import { GenerateButton } from '@/components/generate-button'
 import { ResultsTabs } from '@/components/results-tabs'
 import { RepoSummary } from '@/components/repo-summary'
 import { CopyButton } from '@/components/copy-button'
-import { useGenerationStore } from '@/store/generation-store'
 import { DownloadButton } from '@/components/download-button'
-import { ExportZipButton } from '@/components/export-zip-button';
+import { ExportZipButton } from '@/components/export-zip-button'
 import { GenerationLoading } from '@/components/generation-loading'
 import { ResultSkeleton } from '@/components/result-skeleton'
+import { RecentGenerations } from '@/components/recent-generations'
+
+import { useGenerationStore } from '@/store/generation-store'
 
 export default function HomePage() {
+  return (
+    <Suspense fallback={<HomePageFallback />}>
+      <HomePageContent />
+    </Suspense>
+  )
+}
+
+function HomePageContent() {
+  const searchParams = useSearchParams()
+
   const {
-    repoUrl,
     setRepoUrl,
     generateDocumentation,
     loading,
@@ -21,9 +37,18 @@ export default function HomePage() {
     error,
     result,
   } = useGenerationStore()
-  const repositoryName = result?.repository.fullName?.split('/').at(-1)
-    || result?.repository.name
-    || 'README'
+
+  useEffect(() => {
+    const repo = searchParams.get('repo')
+
+    if (repo) {
+      setRepoUrl(repo)
+    }
+  }, [searchParams, setRepoUrl])
+
+  const handleGenerate = async () => {
+    await generateDocumentation()
+  }
 
   return (
     <main className="min-h-screen bg-black text-white">
@@ -31,17 +56,30 @@ export default function HomePage() {
       <section className="relative overflow-hidden border-b border-gray-900">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(6,182,212,0.15),transparent_40%)]" />
 
+        {/* Navigation */}
+        <div className="absolute right-6 top-6 z-10">
+          <Link
+            href="/history"
+            className="rounded-lg border border-gray-800 bg-gray-950 px-4 py-2 text-sm text-gray-300 transition hover:border-cyan-500 hover:text-white"
+          >
+            History
+          </Link>
+        </div>
+
         <div className="relative mx-auto flex max-w-5xl flex-col items-center px-6 py-20 text-center">
           <div className="mb-6 inline-flex items-center rounded-full border border-cyan-500/20 bg-cyan-500/10 px-4 py-1 text-sm text-cyan-300">
             AI-Powered GitHub Documentation Generator
           </div>
 
           <h1 className="max-w-4xl text-4xl font-black tracking-tight text-white sm:text-5xl md:text-6xl">
-            Generate professional README files from any public GitHub repository
-          </h1>
+            Generate professional README files from any public GitHub
+            repository
+          </h1>       
 
           <p className="mt-6 max-w-2xl text-lg leading-8 text-gray-400">
-            Paste a GitHub repository URL and let ReadmePilot analyze the project, detect frameworks, extract scripts, and generate polished developer documentation in seconds.
+            Paste a GitHub repository URL and let ReadmePilot analyze the
+            project, detect frameworks, extract scripts, and generate polished
+            developer documentation in seconds.
           </p>
 
           <div className="mt-10 w-full max-w-3xl rounded-3xl border border-gray-800 bg-gray-950/80 p-5 shadow-2xl shadow-cyan-500/5 backdrop-blur">
@@ -58,16 +96,19 @@ export default function HomePage() {
             </p>
           </div>
 
+          {/* Error Block */}
           {error && (
             <div className="mt-6 w-full max-w-3xl rounded-2xl border border-red-500/20 bg-red-500/10 p-4">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <p className="font-medium text-red-300">Generation failed</p>
+                  <p className="font-medium text-red-300">
+                    Generation failed
+                  </p>
                   <p className="mt-1 text-sm text-red-200">{error}</p>
                 </div>
 
                 <button
-                  onClick={generateDocumentation}
+                  onClick={handleGenerate}
                   className="rounded-lg bg-red-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-red-400"
                 >
                   Retry
@@ -78,73 +119,12 @@ export default function HomePage() {
         </div>
       </section>
 
-      {loading && (
-        <section className="mx-auto max-w-6xl px-6 pb-12">
-          <div className="grid gap-6 lg:grid-cols-[360px_1fr]">
-            <GenerationLoading step={loadingStep} />
-            <ResultSkeleton />
-          </div>
-        </section>
-      )}
-
-      {!loading && !result && (
-        <section className="mx-auto max-w-4xl px-6 pb-20">
-          <div className="rounded-2xl border border-dashed border-gray-800 bg-gray-950 p-12 text-center">
-            <h3 className="text-xl font-semibold text-white">
-              No documentation generated yet
-            </h3>
-
-            <p className="mt-3 text-gray-400">
-              Paste a public GitHub repository URL above and click Generate Documentation to create a professional README, installation guide, deployment instructions, and API documentation.
-            </p>
-          </div>
-        </section>
-      )}
-
-      {/* Result Section */}
-      {result && (
-        <section className="mx-auto max-w-7xl px-6 pb-20">
-          <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h2 className="text-2xl font-bold text-white">
-                Generated Documentation
-              </h2>
-
-              <p className="mt-1 text-sm text-gray-400">
-                {result.repository.name}
-              </p>
-            </div>
-
-            <div className="flex flex-wrap gap-3">
-              <CopyButton text={result.documentation} />
-
-              <DownloadButton
-                filename={`${result.repository.fullName.split('/')[1] || 'README'}.md`}
-                content={result.documentation}
-              />
-
-              <ExportZipButton
-                repoName={result.repository.fullName.split('/')[1] || 'project'}
-                documentation={result.documentation}
-              />
-            </div>
-          </div>
-
-          <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
-            <RepoSummary
-              repository={result.repository}
-              analysis={result.analysis}
-            />
-
-            <ResultsTabs documentation={result.documentation} />
-          </div>
-        </section>
-      )}
-
       {/* Features */}
       <section className="mx-auto max-w-6xl px-6 py-16">
         <div className="mb-10 text-center">
-          <h2 className="text-3xl font-bold text-white">What ReadmePilot generates</h2>
+          <h2 className="text-3xl font-bold text-white">
+            What ReadmePilot generates
+          </h2>
           <p className="mt-3 text-gray-400">
             Everything needed for a portfolio-ready open-source project README.
           </p>
@@ -173,9 +153,90 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Recent History */}
+      <section className="mx-auto max-w-6xl px-6 pb-12">
+        <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
+          <div />
+          <RecentGenerations />
+        </div>
+      </section>
 
+      {/* Loading State */}
+      {loading && (
+        <section className="mx-auto max-w-6xl px-6 pb-12">
+          <div className="grid gap-6 lg:grid-cols-[360px_1fr]">
+            <GenerationLoading step={loadingStep} />
+            <ResultSkeleton />
+          </div>
+        </section>
+      )}
+
+      {/* Empty State */}
+      {!loading && !result && (
+        <section className="mx-auto max-w-4xl px-6 pb-20">
+          <div className="rounded-2xl border border-dashed border-gray-800 bg-gray-950 p-12 text-center">
+            <h3 className="text-xl font-semibold text-white">
+              No documentation generated yet
+            </h3>
+
+            <p className="mt-3 text-gray-400">
+              Paste a public GitHub repository URL above and click Generate
+              Documentation to create a professional README, installation guide,
+              deployment instructions, and API documentation.
+            </p>
+          </div>
+        </section>
+      )}
+
+      {/* Results */}
+      {result && (
+        <section className="mx-auto max-w-7xl px-6 pb-20">
+          <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="text-2xl font-bold text-white">
+                Generated Documentation
+              </h2>
+
+              <p className="mt-1 text-sm text-gray-400">
+                {result.repository.fullName}
+              </p>
+            </div>
+
+            <div className="flex flex-wrap gap-3">
+              <CopyButton text={result.documentation} />
+
+              <DownloadButton
+                filename={`${
+                  result.repository.fullName.split('/')[1] || 'README'
+                }.md`}
+                content={result.documentation}
+              />
+
+              <ExportZipButton
+                repoName={
+                  result.repository.fullName.split('/')[1] || 'project'
+                }
+                documentation={result.documentation}
+              />
+            </div>
+          </div>
+
+          <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
+            <RepoSummary
+              repository={result.repository}
+              analysis={result.analysis}
+            />
+
+            <ResultsTabs documentation={result.documentation} />
+          </div>
+        </section>
+      )}
     </main>
   )
+}
+
+function HomePageFallback() {
+  return <main className="min-h-screen bg-black text-white" />
 }
 
 interface FeatureCardProps {
