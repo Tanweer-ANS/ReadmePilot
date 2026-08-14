@@ -7,6 +7,7 @@ import { RepoSummary } from '@/components/repo-summary'
 import { CopyButton } from '@/components/copy-button'
 import { useGenerationStore } from '@/store/generation-store'
 import { DownloadButton } from '@/components/download-button'
+import { ExportZipButton } from '@/components/export-zip-button'
 
 export default function HomePage() {
   const {
@@ -58,6 +59,46 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Result Section */}
+      {result && (
+        <section className="mx-auto max-w-7xl px-6 pb-20">
+          <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="text-2xl font-bold text-white">
+                Generated Documentation
+              </h2>
+
+              <p className="mt-1 text-sm text-gray-400">
+                {result.repository.name}
+              </p>
+            </div>
+
+            <div className="flex flex-wrap gap-3">
+              <CopyButton text={result.documentation} />
+
+              <DownloadButton
+                filename={`${result.repository.fullName.split('/')[1] || 'README'}.md`}
+                content={result.documentation}
+              />
+
+              <ExportZipButton
+                repoName={result.repository.fullName.split('/')[1] || 'project'}
+                documentation={result.documentation}
+              />
+            </div>
+          </div>
+
+          <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
+            <RepoSummary
+              repository={result.repository}
+              analysis={result.analysis}
+            />
+
+            <ResultsTabs documentation={result.documentation} />
+          </div>
+        </section>
+      )}
+
       {/* Features */}
       <section className="mx-auto max-w-6xl px-6 py-16">
         <div className="mb-10 text-center">
@@ -90,40 +131,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Result Section */}
-      {result && (
-        <section className="mx-auto max-w-7xl px-6 pb-20">
-          <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h2 className="text-2xl font-bold text-white">
-                Generated Documentation
-              </h2>
-
-              <p className="mt-1 text-sm text-gray-400">
-                {result.repository.name}
-              </p>
-            </div>
-
-            <div className="flex flex-wrap gap-3">
-              <CopyButton text={result.documentation} />
-
-              <DownloadButton
-                filename={`${repositoryName}.md`}
-                content={result.documentation}
-              />
-            </div>
-          </div>
-
-          <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
-            <RepoSummary
-              repository={result.repository}
-              analysis={result.analysis}
-            />
-
-            <ResultsTabs documentation={result.documentation} />
-          </div>
-        </section>
-      )}
+      
     </main>
   )
 }
