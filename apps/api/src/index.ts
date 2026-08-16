@@ -57,7 +57,7 @@ app.get('/test-gemini', async (_req, res) => {
 const PORT = process.env.PORT || 4000
 
 const server = app.listen(PORT, () => {
-  console.log(`🚀 ReadmePilot API running on http://localhost:${PORT}`)
+  console.log(`ReadmePilot API running on ${PORT}`)
 })
 
 // Increase server timeout to 10 minutes to accommodate long Ollama responses

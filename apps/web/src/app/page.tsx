@@ -18,6 +18,8 @@ import { RecentGenerations } from '@/components/recent-generations'
 
 import { useGenerationStore } from '@/store/generation-store'
 
+
+
 export default function HomePage() {
   return (
     <Suspense fallback={<HomePageFallback />}>
@@ -259,3 +261,5 @@ function FeatureCard({ title, description }: FeatureCardProps) {
     </div>
   )
 }
+
+// production push
