@@ -25,6 +25,9 @@ generateRouter.post('/', async (req, res) => {
 
     const documentation = await generateWithGemini(prompt)
 
+    const start = Date.now()
+    console.log(`Documentation generated in ${Date.now() - start}ms`)
+
     res.json({
       success: true,
       repository,

@@ -74,7 +74,7 @@ function HomePageContent() {
           <h1 className="max-w-4xl text-4xl font-black tracking-tight text-white sm:text-5xl md:text-6xl">
             Generate professional README files from any public GitHub
             repository
-          </h1>       
+          </h1>
 
           <p className="mt-6 max-w-2xl text-lg leading-8 text-gray-400">
             Paste a GitHub repository URL and let ReadmePilot analyze the
@@ -192,6 +192,11 @@ function HomePageContent() {
       {result && (
         <section className="mx-auto max-w-7xl px-6 pb-20">
           <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            {result.cached && (
+              <div className="inline-flex items-center gap-2 rounded-full border border-green-500/20 bg-green-500/10 px-3 py-1 text-xs text-green-300">
+                ⚡ Served from cache
+              </div>
+            )}
             <div>
               <h2 className="text-2xl font-bold text-white">
                 Generated Documentation
@@ -206,9 +211,8 @@ function HomePageContent() {
               <CopyButton text={result.documentation} />
 
               <DownloadButton
-                filename={`${
-                  result.repository.fullName.split('/')[1] || 'README'
-                }.md`}
+                filename={`${result.repository.fullName.split('/')[1] || 'README'
+                  }.md`}
                 content={result.documentation}
               />
 

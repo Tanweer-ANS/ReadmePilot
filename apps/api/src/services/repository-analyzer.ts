@@ -1,4 +1,5 @@
 import { getFileContent, getRepositoryTree } from './github.service'
+import { cache } from '../lib/cache'
 
 type AnalysisResult = {
     framework: string
@@ -6,6 +7,19 @@ type AnalysisResult = {
     envVariables: string[]
     deploymentTargets: string[]
     scripts: Record<string, string>
+}
+
+function getAnalysisCacheKey(repoUrl: string) {
+    const match = repoUrl.match(/github\.com\/([^/]+)\/([^/]+)/)
+
+    if (!match) {
+        throw new Error('Invalid GitHub repository URL')
+    }
+
+    const owner = match[1]
+    const repo = match[2].replace(/\.git$/, '')
+
+    return `analysis:${owner}/${repo}`
 }
 
 function detectPackageManager(files: string[]) {
@@ -69,8 +83,14 @@ function detectDeploymentTargets(files: string[]) {
 }
 
 export async function analyzeRepository(repoUrl: string): Promise<AnalysisResult> {
-    const files = await getRepositoryTree(repoUrl)
+    const cacheKey = getAnalysisCacheKey(repoUrl)
 
+    const cached = cache.get<AnalysisResult>(cacheKey)
+    if (cached !== null) {
+        return cached
+    }
+
+    const files = await getRepositoryTree(repoUrl)
     const packageJsonContent = await getFileContent(repoUrl, 'package.json')
 
     let packageJson: any = null
@@ -86,11 +106,15 @@ export async function analyzeRepository(repoUrl: string): Promise<AnalysisResult
         (await getFileContent(repoUrl, '.env.sample')) ||
         (await getFileContent(repoUrl, '.env.local.example'))
 
-    return {
+    const analysisResult: AnalysisResult = {
         framework: detectFramework(files, packageJson),
         packageManager: detectPackageManager(files),
         envVariables: extractEnvVariables(envExample),
         deploymentTargets: detectDeploymentTargets(files),
         scripts: packageJson?.scripts || {},
     }
+
+    cache.set(cacheKey, analysisResult, 3600) // 1 hour
+
+    return analysisResult
 }

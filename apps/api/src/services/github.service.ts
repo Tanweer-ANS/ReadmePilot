@@ -1,8 +1,20 @@
 import { Octokit } from '@octokit/rest'
+import { cache } from '../lib/cache'
 
 const octokit = new Octokit({
   auth: process.env.GITHUB_TOKEN || undefined,
 })
+
+type RepositoryInfo = {
+  owner: string
+  repo: string
+  name: string
+  fullName: string
+  description: string
+  defaultBranch: string
+  stars: number
+  languages: string[]
+}
 
 function parseRepoUrl(repoUrl: string) {
   const match = repoUrl.match(/github\.com\/([^/]+)\/([^/]+)/)
@@ -20,6 +32,13 @@ function parseRepoUrl(repoUrl: string) {
 export async function getRepositoryInfo(repoUrl: string) {
   const { owner, repo } = parseRepoUrl(repoUrl)
 
+  const cacheKey = `repo:${owner}/${repo}`
+
+  const cached = cache.get<RepositoryInfo>(cacheKey)
+  if (cached !== null) {
+    return cached
+  }
+
   const { data: repository } = await octokit.repos.get({
     owner,
     repo,
@@ -30,7 +49,7 @@ export async function getRepositoryInfo(repoUrl: string) {
     repo,
   })
 
-  return {
+  const result: RepositoryInfo = {
     owner,
     repo,
     name: repository.name,
@@ -40,6 +59,10 @@ export async function getRepositoryInfo(repoUrl: string) {
     stars: repository.stargazers_count,
     languages: Object.keys(languages),
   }
+
+  cache.set(cacheKey, result, 1800) // 30 minutes
+
+  return result
 }
 
 export async function getRepositoryTree(repoUrl: string) {

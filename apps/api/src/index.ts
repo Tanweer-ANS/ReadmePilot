@@ -10,6 +10,7 @@ import { generateWithGemini } from './services/gemini.service'
 
 import timeout from 'express-timeout-handler'
 import { logger } from './middleware/logger'
+import cacheRoutes from './routes/cache.route'
 
 
 
@@ -23,6 +24,8 @@ app.use(
 )
 
 app.use(express.json())
+
+app.use(logger)
 
 app.use('/health', healthRouter)
 app.use('/api/analyze', analyzeRouter)
@@ -40,7 +43,7 @@ app.use(
   })
 )
 
-app.use(logger)
+app.use('/api', cacheRoutes)
 
 app.get('/test-gemini', async (_req, res) => {
   try {
