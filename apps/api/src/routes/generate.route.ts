@@ -23,7 +23,7 @@ generateRouter.post('/', async (req, res) => {
       analysis,
     })
 
-    const documentation = await generateWithGemini(prompt)
+    const generation = await generateWithGemini(prompt)
 
     const start = Date.now()
     console.log(`Documentation generated in ${Date.now() - start}ms`)
@@ -32,7 +32,8 @@ generateRouter.post('/', async (req, res) => {
       success: true,
       repository,
       analysis,
-      documentation,
+      documentation: generation.text,
+      cached: generation.cached,
     })
   } catch (error: any) {
     console.error('Generation error:', error)

@@ -8,4 +8,8 @@ build
 npm-debug.log*
 .DS_Store
 Thumbs.db
-.vscode/*
+.vscode
+
+.env
+.env.local
+.env.*.local

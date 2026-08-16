@@ -5,6 +5,7 @@ import { saveGeneration } from '@/services/history.service'
 
 export type GeneratedResult = {
   documentation: string
+  cached: boolean
   repository: {
     fullName: string
     name: string

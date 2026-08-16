@@ -5,12 +5,19 @@ import { cache } from '../lib/cache'
 const MODEL_NAME = 'gemini-3.5-flash-lite'
 const GEMINI_CACHE_TTL_SECONDS = 3600
 
+export type GeminiGenerationResult = {
+  text: string
+  cached: boolean
+}
+
 function getGeminiCacheKey(prompt: string) {
   const promptHash = createHash('sha256').update(prompt).digest('hex')
   return `gemini:${MODEL_NAME}:${promptHash}`
 }
 
-export async function generateWithGemini(prompt: string) {
+export async function generateWithGemini(
+  prompt: string
+): Promise<GeminiGenerationResult> {
   const apiKey = process.env.GEMINI_API_KEY
 
   if (!apiKey) {
@@ -21,7 +28,7 @@ export async function generateWithGemini(prompt: string) {
   const cached = cache.get<string>(cacheKey)
 
   if (cached !== null) {
-    return cached
+    return { text: cached, cached: true }
   }
 
   const genAI = new GoogleGenerativeAI(apiKey)
@@ -35,5 +42,5 @@ export async function generateWithGemini(prompt: string) {
 
   cache.set(cacheKey, responseText, GEMINI_CACHE_TTL_SECONDS)
 
-  return responseText
+  return { text: responseText, cached: false }
 }

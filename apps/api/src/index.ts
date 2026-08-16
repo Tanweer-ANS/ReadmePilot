@@ -47,8 +47,8 @@ app.use('/api', cacheRoutes)
 
 app.get('/test-gemini', async (_req, res) => {
   try {
-    const text = await generateWithGemini('Say hello from Gemini')
-    res.json({ text })
+    const generation = await generateWithGemini('Say hello from Gemini')
+    res.json(generation)
   } catch (error: any) {
     res.status(500).json({ error: error.message })
   }
