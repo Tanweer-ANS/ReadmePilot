@@ -1,28 +1,38 @@
 'use client'
 
-import { GitBranch } from 'lucide-react'
 import { useGenerationStore } from '@/store/generation-store'
 
 export function RepoInput() {
   const { repoUrl, setRepoUrl } = useGenerationStore()
 
   return (
-    <div className="w-full max-w-2xl space-y-4">
-      <div className="flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3 shadow-sm dark:border-gray-800 dark:bg-gray-900">
-        <GitBranch className="h-5 w-5 text-gray-500" />
+    <div className="w-full">
+      <label
+        htmlFor="repository-url"
+        className="sr-only"
+      >
+        GitHub repository URL
+      </label>
+
+      <div className="flex min-h-[52px] items-center rounded-2xl border border-gray-800 bg-black px-4 transition-colors focus-within:border-cyan-500/60 focus-within:ring-2 focus-within:ring-cyan-500/10">
+        <span
+          className="mr-3 text-gray-600"
+          aria-hidden="true"
+        >
+          ↗
+        </span>
 
         <input
-          type="text"
+          id="repository-url"
+          type="url"
           value={repoUrl}
-          onChange={(e) => setRepoUrl(e.target.value)}
-          placeholder="https://github.com/vercel/next.js"
-          className="flex-1 bg-transparent outline-none text-sm text-gray-900 placeholder:text-gray-400 dark:text-gray-100"
+          onChange={(event) => setRepoUrl(event.target.value)}
+          placeholder="https://github.com/owner/repository"
+          autoComplete="url"
+          spellCheck={false}
+          className="min-w-0 flex-1 bg-transparent text-sm text-white outline-none placeholder:text-gray-600"
         />
       </div>
-
-      <p className="text-sm text-gray-500 text-center">
-        Paste any public GitHub repository URL
-      </p>
     </div>
   )
 }

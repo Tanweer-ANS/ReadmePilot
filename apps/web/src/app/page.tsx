@@ -324,12 +324,12 @@ function HomePageContent() {
             </div>
 
             <h3 className="mt-5 text-xl font-semibold text-white">
-              Ready to document your repository?
+              Your documentation workspace is ready
             </h3>
 
             <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-gray-500">
-              Paste a public GitHub repository URL above and let ReadmePilot
-              generate a complete documentation package.
+              Enter a public GitHub repository above to analyze its codebase and
+              generate documentation automatically.
             </p>
           </div>
         </section>
@@ -355,9 +355,17 @@ function HomePageContent() {
                   )}
                 </div>
 
-                <p className="mt-1 text-sm text-gray-500">
-                  {result.repository.fullName}
-                </p>
+                <div className="mt-2 flex flex-wrap items-center gap-2 text-sm">
+                  <span className="text-gray-400">
+                    {result.repository.fullName}
+                  </span>
+
+                  {result.repository.stars > 0 && (
+                    <span className="rounded-full border border-gray-800 bg-gray-900 px-2 py-0.5 text-xs text-gray-500">
+                      ★ {result.repository.stars}
+                    </span>
+                  )}
+                </div>
               </div>
 
               <div className="flex flex-wrap gap-2">

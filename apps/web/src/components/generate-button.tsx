@@ -1,30 +1,71 @@
 'use client'
 
-import { Loader2, Sparkles } from 'lucide-react'
 import { useGenerationStore } from '@/store/generation-store'
 
 export function GenerateButton() {
   const {
-    repoUrl,
     loading,
+    repoUrl,
     generateDocumentation,
   } = useGenerationStore()
 
+  const disabled = loading || !repoUrl.trim()
+
+  const handleClick = async () => {
+    if (disabled) return
+
+    await generateDocumentation()
+  }
+
   return (
     <button
-      onClick={generateDocumentation}
-      disabled={loading || !repoUrl.trim()}
-      className="inline-flex items-center justify-center gap-2 rounded-xl bg-black px-6 py-3 text-sm font-medium text-white transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-white dark:text-black dark:hover:bg-gray-200"
+      type="button"
+      onClick={handleClick}
+      disabled={disabled}
+      aria-label={
+        loading
+          ? 'Generating documentation'
+          : 'Generate documentation'
+      }
+      className="
+        inline-flex
+        min-h-[52px]
+        items-center
+        justify-center
+        gap-2
+        rounded-2xl
+        bg-cyan-500
+        px-6
+        text-sm
+        font-bold
+        text-black
+        shadow-lg
+        shadow-cyan-500/10
+        transition-all
+        duration-200
+        hover:bg-cyan-400
+        hover:shadow-cyan-500/20
+        active:scale-[0.98]
+        disabled:cursor-not-allowed
+        disabled:opacity-40
+        disabled:hover:bg-cyan-500
+        disabled:hover:shadow-none
+        sm:min-w-[190px]
+      "
     >
       {loading ? (
         <>
-          <Loader2 className="h-4 w-4 animate-spin" />
+          <span
+            className="h-4 w-4 animate-spin rounded-full border-2 border-black/30 border-t-black"
+            aria-hidden="true"
+          />
+
           Generating...
         </>
       ) : (
         <>
-          <Sparkles className="h-4 w-4" />
           Generate Documentation
+          <span aria-hidden="true">→</span>
         </>
       )}
     </button>
