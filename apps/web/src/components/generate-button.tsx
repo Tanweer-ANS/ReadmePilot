@@ -1,5 +1,6 @@
 'use client'
 
+import { useAuth } from '@clerk/nextjs'
 import { useGenerationStore } from '@/store/generation-store'
 
 export function GenerateButton() {
@@ -8,13 +9,15 @@ export function GenerateButton() {
     repoUrl,
     generateDocumentation,
   } = useGenerationStore()
+  const { getToken, userId } = useAuth()
 
   const disabled = loading || !repoUrl.trim()
 
   const handleClick = async () => {
     if (disabled) return
 
-    await generateDocumentation()
+    const token = await getToken()
+    await generateDocumentation(token, userId ?? null)
   }
 
   return (

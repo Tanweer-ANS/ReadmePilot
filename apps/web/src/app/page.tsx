@@ -1,90 +1,68 @@
 'use client'
 
-import { Suspense, useEffect } from 'react'
+import { useEffect } from 'react'
 import Link from 'next/link'
-import { useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
+import { SignInButton, SignUpButton, useUser } from '@clerk/nextjs'
 
-import { RepoInput } from '@/components/repo-input'
-import { GenerateButton } from '@/components/generate-button'
-import { ResultsTabs } from '@/components/results-tabs'
-import { RepoSummary } from '@/components/repo-summary'
-import { CopyButton } from '@/components/copy-button'
-import { DownloadButton } from '@/components/download-button'
-import { ExportZipButton } from '@/components/export-zip-button'
-import { GenerationLoading } from '@/components/generation-loading'
-import { ResultSkeleton } from '@/components/result-skeleton'
-import { RecentGenerations } from '@/components/recent-generations'
-
-import { useGenerationStore } from '@/store/generation-store'
-
-export default function HomePage() {
-  return (
-    <Suspense fallback={<HomePageFallback />}>
-      <HomePageContent />
-    </Suspense>
-  )
-}
-
-function HomePageContent() {
-  const searchParams = useSearchParams()
-
-  const {
-    setRepoUrl,
-    generateDocumentation,
-    loading,
-    loadingStep,
-    error,
-    result,
-  } = useGenerationStore()
+export default function LandingPage() {
+  const { isSignedIn, isLoaded } = useUser()
+  const router = useRouter()
 
   useEffect(() => {
-    const repo = searchParams.get('repo')
-
-    if (repo) {
-      setRepoUrl(repo)
+    if (isLoaded && isSignedIn) {
+      router.replace('/dashboard')
     }
-  }, [searchParams, setRepoUrl])
+  }, [isLoaded, isSignedIn, router])
 
-  const handleGenerate = async () => {
-    await generateDocumentation()
+  // Show loading spinner while checking auth or redirecting logged-in user
+  if (!isLoaded || isSignedIn) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-black text-white">
+        <div className="flex flex-col items-center gap-4">
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-gray-800 border-t-cyan-400" />
+          <p className="text-xs text-gray-500 font-medium">Loading ReadmePilot...</p>
+        </div>
+      </main>
+    )
   }
 
   return (
-    <main className="min-h-screen bg-black text-white">
+    <main className="min-h-screen bg-black text-white overflow-x-hidden">
       {/* =========================================================
           NAVIGATION
       ========================================================== */}
       <header className="absolute left-0 right-0 top-0 z-20">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
-          <Link
-            href="/"
-            className="group flex items-center gap-2"
-          >
+          {/* Logo */}
+          <Link href="/" className="group flex items-center gap-2.5">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-cyan-500 text-sm font-black text-black transition group-hover:scale-105">
               R
             </div>
-
             <span className="text-lg font-bold tracking-tight text-white">
               ReadmePilot
             </span>
           </Link>
 
+          {/* Nav buttons */}
           <nav className="flex items-center gap-3">
-            <Link
-              href="/history"
-              className="rounded-xl border border-gray-800 bg-gray-950/70 px-4 py-2 text-sm font-medium text-gray-300 backdrop-blur transition hover:border-gray-700 hover:bg-gray-900 hover:text-white"
-            >
-              History
-            </Link>
+            <SignInButton mode="redirect">
+              <button
+                id="nav-signin-btn"
+                className="rounded-xl border border-gray-700 bg-gray-900/70 px-4 py-2 text-sm font-medium text-gray-300 backdrop-blur transition hover:border-gray-600 hover:bg-gray-800 hover:text-white"
+              >
+                Sign in
+              </button>
+            </SignInButton>
 
-            <a
-              href="https://github.com/Tanweer-ANS"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hidden rounded-xl border border-gray-800 bg-gray-950/70 px-4 py-2 text-sm font-medium text-gray-300 backdrop-blur transition hover:border-gray-700 hover:bg-gray-900 hover:text-white sm:block"
-            >
-              GitHub
-            </a>
+            <SignUpButton mode="redirect">
+              <button
+                id="nav-signup-btn"
+                className="rounded-xl bg-cyan-500 px-4 py-2 text-sm font-bold text-black transition hover:bg-cyan-400 active:scale-95"
+              >
+                Get started free
+              </button>
+            </SignUpButton>
           </nav>
         </div>
       </header>
@@ -92,143 +70,152 @@ function HomePageContent() {
       {/* =========================================================
           HERO
       ========================================================== */}
-      <section className="relative overflow-hidden border-b border-gray-900">
-        {/* Background effects */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(6,182,212,0.16),transparent_38%)]" />
+      <section className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden border-b border-gray-900 px-6 text-center">
 
-        <div className="absolute left-1/2 top-40 h-72 w-72 -translate-x-1/2 rounded-full bg-cyan-500/5 blur-3xl" />
+        {/* Background glow effects */}
+        <div className="pointer-events-none absolute inset-0">
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(6,182,212,0.18),transparent)]" />
+          <div className="absolute left-1/4 top-1/3 h-96 w-96 rounded-full bg-cyan-500/5 blur-[120px]" />
+          <div className="absolute right-1/4 top-1/2 h-64 w-64 rounded-full bg-blue-600/5 blur-[100px]" />
+        </div>
 
-        <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-cyan-500/20 to-transparent" />
-
-        <div className="relative mx-auto flex max-w-6xl flex-col items-center px-6 pb-24 pt-36 text-center sm:pb-28 sm:pt-40">
+        <div className="relative z-10 mx-auto max-w-5xl">
           {/* Badge */}
-          <div className="mb-7 inline-flex items-center gap-2 rounded-full border border-cyan-500/20 bg-cyan-500/10 px-4 py-2 text-xs font-medium text-cyan-300 sm:text-sm">
-            <span className="h-1.5 w-1.5 rounded-full bg-cyan-400" />
-            AI-Powered GitHub Documentation
+          <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-cyan-500/25 bg-cyan-500/10 px-4 py-2 text-xs font-medium text-cyan-300 shadow-lg shadow-cyan-500/5 sm:text-sm">
+            <span className="relative flex h-2 w-2">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-cyan-400 opacity-75" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-cyan-400" />
+            </span>
+            Powered by Google Gemini AI
           </div>
 
-          {/* Heading */}
-          <h1 className="max-w-5xl text-4xl font-black tracking-tight text-white sm:text-5xl md:text-6xl lg:text-7xl">
-            Turn any GitHub repository into{' '}
-            <span className="text-cyan-400">
-              great documentation.
+          {/* Headline */}
+          <h1 className="text-5xl font-black tracking-tight text-white sm:text-6xl md:text-7xl lg:text-8xl">
+            Turn any repo into
+            <br />
+            <span className="bg-gradient-to-r from-cyan-400 via-cyan-300 to-sky-400 bg-clip-text text-transparent">
+              great docs.
             </span>
           </h1>
 
-          {/* Description */}
-          <p className="mt-7 max-w-2xl text-base leading-7 text-gray-400 sm:text-lg sm:leading-8">
-            ReadmePilot analyzes your repository, understands its structure,
-            detects its technology stack, and generates professional developer
-            documentation in seconds.
+          {/* Subheadline */}
+          <p className="mx-auto mt-8 max-w-2xl text-base leading-8 text-gray-400 sm:text-lg sm:leading-9">
+            ReadmePilot analyzes any public GitHub repository and generates
+            professional README files, API docs, environment guides, and
+            deployment instructions — in seconds.
           </p>
 
-          {/* Generator Card */}
-          <div className="mt-10 w-full max-w-4xl">
-            <div className="rounded-3xl border border-gray-800 bg-gray-950/90 p-3 shadow-2xl shadow-cyan-500/5 backdrop-blur-xl sm:p-4">
-              <div className="flex flex-col gap-3 sm:flex-row">
-                <div className="min-w-0 flex-1">
-                  <RepoInput />
-                </div>
+          {/* Action CTAs */}
+          <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
+            <SignUpButton mode="redirect">
+              <button
+                id="hero-signup-btn"
+                className="group relative inline-flex min-w-[200px] items-center justify-center gap-2 overflow-hidden rounded-2xl bg-cyan-500 px-8 py-4 text-base font-bold text-black shadow-xl shadow-cyan-500/20 transition-all duration-300 hover:bg-cyan-400 hover:shadow-cyan-500/30 active:scale-95"
+              >
+                <span>Start for free</span>
+                <span className="transition-transform duration-200 group-hover:translate-x-0.5">→</span>
+              </button>
+            </SignUpButton>
 
-                <GenerateButton />
+            <SignInButton mode="redirect">
+              <button
+                id="hero-signin-btn"
+                className="inline-flex min-w-[160px] items-center justify-center rounded-2xl border border-gray-700 bg-gray-900/50 px-8 py-4 text-base font-medium text-gray-300 backdrop-blur transition-all duration-200 hover:border-gray-600 hover:bg-gray-800 hover:text-white"
+              >
+                Sign in
+              </button>
+            </SignInButton>
+          </div>
+
+          <p className="mt-6 text-sm text-gray-600">
+            No credit card required · Free to use · Works with public repos
+          </p>
+        </div>
+
+        {/* Terminal Preview Mockup */}
+        <div className="relative z-10 mx-auto mt-16 w-full max-w-3xl">
+          <div className="overflow-hidden rounded-2xl border border-gray-800 bg-gray-950 shadow-2xl shadow-black/50">
+            <div className="flex items-center gap-2 border-b border-gray-800 bg-gray-900/80 px-5 py-3">
+              <div className="h-3 w-3 rounded-full bg-red-500/80" />
+              <div className="h-3 w-3 rounded-full bg-yellow-500/80" />
+              <div className="h-3 w-3 rounded-full bg-green-500/80" />
+              <span className="ml-3 text-xs text-gray-500 font-mono">
+                ReadmePilot — AI Documentation Generator
+              </span>
+            </div>
+            <div className="p-6 font-mono text-sm text-left">
+              <div className="flex items-center gap-2 text-gray-500">
+                <span className="text-cyan-400">$</span>
+                <span className="text-gray-300">Analyzing</span>
+                <span className="text-cyan-300">github.com/expressjs/express</span>
               </div>
-
-              <div className="flex flex-col gap-2 px-2 pt-3 text-left sm:flex-row sm:items-center sm:justify-between">
-                <p className="text-xs text-gray-500">
-                  Works with public GitHub repositories.
+              <div className="mt-3 space-y-1.5 text-xs">
+                <div className="flex items-center gap-2">
+                  <span className="text-green-400">✓</span>
+                  <span className="text-gray-400">Repository metadata fetched</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-green-400">✓</span>
+                  <span className="text-gray-400">Framework detected: Express.js + Node.js</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-green-400">✓</span>
+                  <span className="text-gray-400">Environment variables documented</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-cyan-400 animate-pulse">⠿</span>
+                  <span className="text-gray-400">Generating README with Gemini AI…</span>
+                </div>
+              </div>
+              <div className="mt-4 rounded-xl border border-cyan-500/20 bg-cyan-500/5 p-3">
+                <p className="text-xs text-cyan-300 font-semibold">
+                  # Express.js — Fast, unopinionated, minimalist web framework for Node.js
                 </p>
-
-                <button
-                  type="button"
-                  onClick={() =>
-                    setRepoUrl('https://github.com/expressjs/express')
-                  }
-                  className="w-fit text-xs text-gray-500 transition hover:text-cyan-400"
-                >
-                  Try an example →
-                </button>
+                <p className="mt-1 text-xs text-gray-500">
+                  ## Installation · ## Quick Start · ## API Reference · ## Deployment…
+                </p>
               </div>
             </div>
           </div>
-
-          {/* Trust indicators */}
-          <div className="mt-7 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-gray-500 sm:text-sm">
-            <span>✓ Repository analysis</span>
-            <span>✓ AI-generated docs</span>
-            <span>✓ Markdown export</span>
-          </div>
-
-          {/* Error */}
-          {error && (
-            <div className="mt-6 w-full max-w-4xl rounded-2xl border border-red-500/20 bg-red-500/10 p-4 text-left">
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                <div>
-                  <p className="font-semibold text-red-300">
-                    Generation failed
-                  </p>
-
-                  <p className="mt-1 text-sm leading-6 text-red-200/80">
-                    {error}
-                  </p>
-                </div>
-
-                <button
-                  onClick={handleGenerate}
-                  className="shrink-0 rounded-xl bg-red-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-400"
-                >
-                  Try again
-                </button>
-              </div>
-            </div>
-          )}
         </div>
       </section>
 
       {/* =========================================================
           FEATURES
       ========================================================== */}
-      <section className="border-b border-gray-900 bg-gray-950/30">
-        <div className="mx-auto max-w-7xl px-6 py-20 sm:py-24">
-          <div className="mx-auto mb-12 max-w-2xl text-center">
+      <section className="border-b border-gray-900 bg-gray-950/30 py-24">
+        <div className="mx-auto max-w-7xl px-6">
+          <div className="mx-auto mb-16 max-w-2xl text-center">
             <p className="text-sm font-semibold uppercase tracking-widest text-cyan-400">
               Documentation, automated
             </p>
-
-            <h2 className="mt-3 text-3xl font-bold tracking-tight text-white sm:text-4xl">
+            <h2 className="mt-4 text-3xl font-bold tracking-tight text-white sm:text-4xl">
               Everything your repository needs
             </h2>
-
-            <p className="mt-4 leading-7 text-gray-400">
+            <p className="mt-5 leading-7 text-gray-400">
               From project overview to deployment instructions, ReadmePilot
-              turns repository information into documentation developers can
-              actually use.
+              turns raw repository data into polished documentation.
             </p>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <FeatureCard
-              number="01"
-              title="README.md"
-              description="Project overview, features, technology stack, installation steps, and usage examples."
-            />
-
-            <FeatureCard
-              number="02"
-              title="Environment Docs"
-              description="Detects environment variables from example files and documents what your project needs."
-            />
-
-            <FeatureCard
-              number="03"
-              title="Deployment Guide"
-              description="Identifies deployment configurations such as Vercel, Docker, Railway, and Render."
-            />
-
-            <FeatureCard
-              number="04"
-              title="API & Scripts"
-              description="Extracts package scripts and repository information into developer-friendly references."
-            />
+            {FEATURES.map((f) => (
+              <div
+                key={f.number}
+                className="group rounded-2xl border border-gray-800 bg-black p-6 transition duration-300 hover:-translate-y-1 hover:border-cyan-500/30 hover:bg-gray-950"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold tracking-widest text-gray-600">
+                    {f.number}
+                  </span>
+                  <span className="text-gray-700 transition group-hover:text-cyan-400">
+                    ↗
+                  </span>
+                </div>
+                <h3 className="mt-8 text-lg font-semibold text-white">{f.title}</h3>
+                <p className="mt-3 text-sm leading-6 text-gray-500">{f.description}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -236,166 +223,65 @@ function HomePageContent() {
       {/* =========================================================
           HOW IT WORKS
       ========================================================== */}
-      <section className="border-b border-gray-900">
-        <div className="mx-auto max-w-6xl px-6 py-20 sm:py-24">
+      <section className="border-b border-gray-900 py-24">
+        <div className="mx-auto max-w-6xl px-6">
           <div className="mx-auto max-w-2xl text-center">
             <p className="text-sm font-semibold uppercase tracking-widest text-cyan-400">
               Simple workflow
             </p>
-
-            <h2 className="mt-3 text-3xl font-bold tracking-tight text-white sm:text-4xl">
+            <h2 className="mt-4 text-3xl font-bold tracking-tight text-white sm:text-4xl">
               From repository to README in three steps
             </h2>
           </div>
 
-          <div className="mt-14 grid gap-8 md:grid-cols-3">
-            <StepCard
-              number="1"
-              title="Paste your repository"
-              description="Provide the URL of any public GitHub repository you want to document."
-            />
-
-            <StepCard
-              number="2"
-              title="ReadmePilot analyzes it"
-              description="The analyzer inspects repository metadata, files, frameworks, scripts, environments, and deployment configuration."
-            />
-
-            <StepCard
-              number="3"
-              title="Get your documentation"
-              description="Gemini transforms the repository analysis into polished, developer-friendly documentation you can copy or download."
-            />
+          <div className="mt-16 grid gap-6 md:grid-cols-3">
+            {STEPS.map((s) => (
+              <div
+                key={s.number}
+                className="relative rounded-2xl border border-gray-800 bg-gray-950/40 p-8"
+              >
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-cyan-500/10 text-lg font-bold text-cyan-400 ring-1 ring-cyan-500/20">
+                  {s.number}
+                </div>
+                <h3 className="mt-6 text-lg font-semibold text-white">{s.title}</h3>
+                <p className="mt-3 text-sm leading-7 text-gray-500">{s.description}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
       {/* =========================================================
-          RECENT HISTORY
+          CTA SECTION
       ========================================================== */}
-      <section className="mx-auto max-w-7xl px-6 py-16">
-        <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
-          <div className="hidden rounded-3xl border border-gray-900 bg-gray-950/40 lg:block">
-            <div className="flex h-full min-h-[220px] items-center justify-center px-10 text-center">
-              <div>
-                <p className="text-sm font-medium text-gray-300">
-                  Your documentation workspace
-                </p>
+      <section className="py-32">
+        <div className="mx-auto max-w-4xl px-6 text-center">
+          <p className="text-sm font-semibold uppercase tracking-widest text-cyan-400">
+            Ready to start?
+          </p>
 
-                <p className="mt-2 max-w-md text-sm leading-6 text-gray-500">
-                  Generated repositories are automatically saved to your
-                  history so you can return to them later.
-                </p>
+          <h2 className="relative mt-4 text-4xl font-black tracking-tight text-white sm:text-5xl">
+            Stop writing READMEs manually.
+          </h2>
 
-                <Link
-                  href="/history"
-                  className="mt-5 inline-flex rounded-xl border border-gray-800 px-4 py-2 text-sm font-medium text-gray-300 transition hover:border-cyan-500/40 hover:text-white"
-                >
-                  View full history →
-                </Link>
-              </div>
-            </div>
+          <p className="mx-auto mt-6 max-w-xl text-lg leading-8 text-gray-400">
+            Sign up for free and generate professional documentation for your
+            GitHub repositories in seconds.
+          </p>
+
+          <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
+            <SignUpButton mode="redirect">
+              <button
+                id="cta-signup-btn"
+                className="group inline-flex min-w-[220px] items-center justify-center gap-2 rounded-2xl bg-cyan-500 px-8 py-4 text-base font-bold text-black shadow-xl shadow-cyan-500/20 transition hover:bg-cyan-400 active:scale-95"
+              >
+                Create free account
+                <span className="transition-transform duration-200 group-hover:translate-x-0.5">→</span>
+              </button>
+            </SignUpButton>
           </div>
-
-          <RecentGenerations />
         </div>
       </section>
-
-      {/* =========================================================
-          LOADING
-      ========================================================== */}
-      {loading && (
-        <section className="mx-auto max-w-7xl px-6 pb-16">
-          <div className="grid gap-6 lg:grid-cols-[360px_1fr]">
-            <GenerationLoading step={loadingStep} />
-            <ResultSkeleton />
-          </div>
-        </section>
-      )}
-
-      {/* =========================================================
-          EMPTY STATE
-      ========================================================== */}
-      {!loading && !result && (
-        <section className="mx-auto max-w-4xl px-6 pb-24">
-          <div className="rounded-3xl border border-dashed border-gray-800 bg-gray-950/50 px-6 py-14 text-center">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl border border-gray-800 bg-gray-900 text-cyan-400">
-              ✦
-            </div>
-
-            <h3 className="mt-5 text-xl font-semibold text-white">
-              Your documentation workspace is ready
-            </h3>
-
-            <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-gray-500">
-              Enter a public GitHub repository above to analyze its codebase and
-              generate documentation automatically.
-            </p>
-          </div>
-        </section>
-      )}
-
-      {/* =========================================================
-          RESULTS
-      ========================================================== */}
-      {result && (
-        <section className="mx-auto max-w-7xl px-6 pb-24">
-          <div className="mb-6 rounded-2xl border border-gray-900 bg-gray-950/50 p-5">
-            <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-              <div>
-                <div className="flex flex-wrap items-center gap-3">
-                  <h2 className="text-2xl font-bold text-white">
-                    Generated Documentation
-                  </h2>
-
-                  {result.cached && (
-                    <span className="inline-flex items-center gap-1.5 rounded-full border border-green-500/20 bg-green-500/10 px-3 py-1 text-xs font-medium text-green-300">
-                      ⚡ Served from cache
-                    </span>
-                  )}
-                </div>
-
-                <div className="mt-2 flex flex-wrap items-center gap-2 text-sm">
-                  <span className="text-gray-400">
-                    {result.repository.fullName}
-                  </span>
-
-                  {result.repository.stars > 0 && (
-                    <span className="rounded-full border border-gray-800 bg-gray-900 px-2 py-0.5 text-xs text-gray-500">
-                      ★ {result.repository.stars}
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              <div className="flex flex-wrap gap-2">
-                <CopyButton text={result.documentation} />
-
-                <DownloadButton
-                  filename={`${result.repository.fullName.split('/')[1] || 'README'}.md`}
-                  content={result.documentation}
-                />
-
-                <ExportZipButton
-                  repoName={
-                    result.repository.fullName.split('/')[1] || 'project'
-                  }
-                  documentation={result.documentation}
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
-            <RepoSummary
-              repository={result.repository}
-              analysis={result.analysis}
-            />
-
-            <ResultsTabs documentation={result.documentation} />
-          </div>
-        </section>
-      )}
 
       {/* =========================================================
           FOOTER
@@ -403,37 +289,14 @@ function HomePageContent() {
       <footer className="border-t border-gray-900">
         <div className="mx-auto max-w-7xl px-6 py-10">
           <div className="flex flex-col gap-8 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <div className="flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-cyan-500 text-xs font-black text-black">
-                  R
-                </div>
-
-                <span className="font-semibold text-white">
-                  ReadmePilot
-                </span>
+            <div className="flex items-center gap-2">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-cyan-500 text-xs font-black text-black">
+                R
               </div>
-
-              <p className="mt-3 max-w-sm text-sm leading-6 text-gray-500">
-                AI-powered documentation generation for GitHub repositories.
-              </p>
+              <span className="font-semibold text-white">ReadmePilot</span>
             </div>
 
             <div className="flex flex-wrap items-center gap-5 text-sm text-gray-500">
-              <Link
-                href="/"
-                className="transition hover:text-white"
-              >
-                Home
-              </Link>
-
-              <Link
-                href="/history"
-                className="transition hover:text-white"
-              >
-                History
-              </Link>
-
               <a
                 href="https://github.com/Tanweer-ANS"
                 target="_blank"
@@ -454,86 +317,50 @@ function HomePageContent() {
   )
 }
 
-/* ===============================================================
-   FALLBACK
-=============================================================== */
+const FEATURES = [
+  {
+    number: '01',
+    title: 'README.md',
+    description:
+      'Project overview, features, technology stack, installation steps, and usage examples.',
+  },
+  {
+    number: '02',
+    title: 'Environment Docs',
+    description:
+      'Detects environment variables from example files and documents what your project needs.',
+  },
+  {
+    number: '03',
+    title: 'Deployment Guide',
+    description:
+      'Identifies deployment configurations such as Vercel, Docker, Railway, and Render.',
+  },
+  {
+    number: '04',
+    title: 'API & Scripts',
+    description:
+      'Extracts package scripts and repository information into developer-friendly references.',
+  },
+]
 
-function HomePageFallback() {
-  return (
-    <main className="min-h-screen bg-black text-white">
-      <div className="mx-auto flex min-h-screen max-w-7xl items-center justify-center px-6">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-gray-800 border-t-cyan-400" />
-      </div>
-    </main>
-  )
-}
-
-/* ===============================================================
-   FEATURE CARD
-=============================================================== */
-
-interface FeatureCardProps {
-  number: string
-  title: string
-  description: string
-}
-
-function FeatureCard({
-  number,
-  title,
-  description,
-}: FeatureCardProps) {
-  return (
-    <div className="group rounded-2xl border border-gray-800 bg-black p-6 transition duration-300 hover:-translate-y-1 hover:border-cyan-500/30 hover:bg-gray-950">
-      <div className="flex items-center justify-between">
-        <span className="text-xs font-semibold tracking-widest text-gray-600">
-          {number}
-        </span>
-
-        <span className="text-gray-700 transition group-hover:text-cyan-400">
-          ↗
-        </span>
-      </div>
-
-      <h3 className="mt-8 text-lg font-semibold text-white">
-        {title}
-      </h3>
-
-      <p className="mt-3 text-sm leading-6 text-gray-500">
-        {description}
-      </p>
-    </div>
-  )
-}
-
-/* ===============================================================
-   STEP CARD
-=============================================================== */
-
-interface StepCardProps {
-  number: string
-  title: string
-  description: string
-}
-
-function StepCard({
-  number,
-  title,
-  description,
-}: StepCardProps) {
-  return (
-    <div className="relative rounded-2xl border border-gray-800 bg-gray-950/40 p-6">
-      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-cyan-500/10 text-sm font-bold text-cyan-400">
-        {number}
-      </div>
-
-      <h3 className="mt-5 text-lg font-semibold text-white">
-        {title}
-      </h3>
-
-      <p className="mt-3 text-sm leading-6 text-gray-500">
-        {description}
-      </p>
-    </div>
-  )
-}
+const STEPS = [
+  {
+    number: '1',
+    title: 'Paste your repository',
+    description:
+      'Provide the URL of any public GitHub repository you want to document.',
+  },
+  {
+    number: '2',
+    title: 'ReadmePilot analyzes it',
+    description:
+      'The analyzer inspects repository metadata, files, frameworks, scripts, environments, and deployment configuration.',
+  },
+  {
+    number: '3',
+    title: 'Get your documentation',
+    description:
+      'Gemini transforms the repository analysis into polished, developer-friendly documentation you can copy or download.',
+  },
+]

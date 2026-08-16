@@ -1,0 +1,388 @@
+'use client'
+
+import { Suspense, useEffect } from 'react'
+import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
+import { useAuth, UserButton } from '@clerk/nextjs'
+
+import { RepoInput } from '@/components/repo-input'
+import { GenerateButton } from '@/components/generate-button'
+import { ResultsTabs } from '@/components/results-tabs'
+import { RepoSummary } from '@/components/repo-summary'
+import { CopyButton } from '@/components/copy-button'
+import { DownloadButton } from '@/components/download-button'
+import { ExportZipButton } from '@/components/export-zip-button'
+import { GenerationLoading } from '@/components/generation-loading'
+import { ResultSkeleton } from '@/components/result-skeleton'
+import { RecentGenerations } from '@/components/recent-generations'
+
+import { useGenerationStore } from '@/store/generation-store'
+
+export default function DashboardPage() {
+  return (
+    <Suspense fallback={<DashboardFallback />}>
+      <DashboardContent />
+    </Suspense>
+  )
+}
+
+function DashboardContent() {
+  const searchParams = useSearchParams()
+  const { getToken, userId } = useAuth()
+
+  const {
+    setRepoUrl,
+    generateDocumentation,
+    loading,
+    loadingStep,
+    error,
+    result,
+  } = useGenerationStore()
+
+  useEffect(() => {
+    const repo = searchParams.get('repo')
+
+    if (repo) {
+      setRepoUrl(repo)
+    }
+  }, [searchParams, setRepoUrl])
+
+  const handleGenerate = async () => {
+    const token = await getToken()
+    await generateDocumentation(token, userId ?? null)
+  }
+
+  return (
+    <main className="min-h-screen bg-black text-white">
+      {/* =========================================================
+          NAVIGATION
+      ========================================================== */}
+      <header className="sticky top-0 z-20 border-b border-gray-900 bg-black/80 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+          <Link
+            href="/"
+            className="group flex items-center gap-2"
+          >
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-cyan-500 text-sm font-black text-black transition group-hover:scale-105">
+              R
+            </div>
+
+            <span className="text-lg font-bold tracking-tight text-white">
+              ReadmePilot
+            </span>
+          </Link>
+
+          <nav className="flex items-center gap-3">
+            <Link
+              href="/history"
+              className="rounded-xl border border-gray-800 bg-gray-950/70 px-4 py-2 text-sm font-medium text-gray-300 backdrop-blur transition hover:border-gray-700 hover:bg-gray-900 hover:text-white"
+            >
+              History
+            </Link>
+
+            <a
+              href="https://github.com/Tanweer-ANS"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hidden rounded-xl border border-gray-800 bg-gray-950/70 px-4 py-2 text-sm font-medium text-gray-300 backdrop-blur transition hover:border-gray-700 hover:bg-gray-900 hover:text-white sm:block"
+            >
+              GitHub
+            </a>
+
+            <UserButton
+              appearance={{
+                elements: {
+                  avatarBox: 'h-9 w-9',
+                },
+              }}
+            />
+          </nav>
+        </div>
+      </header>
+
+      {/* =========================================================
+          HERO / GENERATOR
+      ========================================================== */}
+      <section className="relative overflow-hidden border-b border-gray-900">
+        {/* Background effects */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(6,182,212,0.16),transparent_38%)]" />
+        <div className="absolute left-1/2 top-40 h-72 w-72 -translate-x-1/2 rounded-full bg-cyan-500/5 blur-3xl" />
+        <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-cyan-500/20 to-transparent" />
+
+        <div className="relative mx-auto flex max-w-6xl flex-col items-center px-6 pb-20 pt-16 text-center sm:pb-24 sm:pt-20">
+          {/* Badge */}
+          <div className="mb-7 inline-flex items-center gap-2 rounded-full border border-cyan-500/20 bg-cyan-500/10 px-4 py-2 text-xs font-medium text-cyan-300 sm:text-sm">
+            <span className="h-1.5 w-1.5 rounded-full bg-cyan-400" />
+            AI-Powered GitHub Documentation
+          </div>
+
+          {/* Heading */}
+          <h1 className="max-w-4xl text-3xl font-black tracking-tight text-white sm:text-4xl md:text-5xl lg:text-6xl">
+            Turn any GitHub repository into{' '}
+            <span className="text-cyan-400">
+              great documentation.
+            </span>
+          </h1>
+
+          {/* Description */}
+          <p className="mt-6 max-w-2xl text-base leading-7 text-gray-400 sm:text-lg sm:leading-8">
+            ReadmePilot analyzes your repository, understands its structure,
+            detects its technology stack, and generates professional developer
+            documentation in seconds.
+          </p>
+
+          {/* Generator Card */}
+          <div className="mt-10 w-full max-w-4xl">
+            <div className="rounded-3xl border border-gray-800 bg-gray-950/90 p-3 shadow-2xl shadow-cyan-500/5 backdrop-blur-xl sm:p-4">
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <div className="min-w-0 flex-1">
+                  <RepoInput />
+                </div>
+
+                <GenerateButton />
+              </div>
+
+              <div className="flex flex-col gap-2 px-2 pt-3 text-left sm:flex-row sm:items-center sm:justify-between">
+                <p className="text-xs text-gray-500">
+                  Works with public GitHub repositories.
+                </p>
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    setRepoUrl('https://github.com/expressjs/express')
+                  }
+                  className="w-fit text-xs text-gray-500 transition hover:text-cyan-400"
+                >
+                  Try an example →
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Trust indicators */}
+          <div className="mt-7 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-gray-500 sm:text-sm">
+            <span>✓ Repository analysis</span>
+            <span>✓ AI-generated docs</span>
+            <span>✓ Markdown export</span>
+          </div>
+
+          {/* Error */}
+          {error && (
+            <div className="mt-6 w-full max-w-4xl rounded-2xl border border-red-500/20 bg-red-500/10 p-4 text-left">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <p className="font-semibold text-red-300">
+                    Generation failed
+                  </p>
+
+                  <p className="mt-1 text-sm leading-6 text-red-200/80">
+                    {error}
+                  </p>
+                </div>
+
+                <button
+                  onClick={handleGenerate}
+                  className="shrink-0 rounded-xl bg-red-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-400"
+                >
+                  Try again
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* =========================================================
+          RECENT HISTORY
+      ========================================================== */}
+      <section className="mx-auto max-w-7xl px-6 py-16">
+        <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
+          <div className="hidden rounded-3xl border border-gray-900 bg-gray-950/40 lg:block">
+            <div className="flex h-full min-h-[220px] items-center justify-center px-10 text-center">
+              <div>
+                <p className="text-sm font-medium text-gray-300">
+                  Your documentation workspace
+                </p>
+
+                <p className="mt-2 max-w-md text-sm leading-6 text-gray-500">
+                  Generated repositories are automatically saved to your
+                  history so you can return to them later.
+                </p>
+
+                <Link
+                  href="/history"
+                  className="mt-5 inline-flex rounded-xl border border-gray-800 px-4 py-2 text-sm font-medium text-gray-300 transition hover:border-cyan-500/40 hover:text-white"
+                >
+                  View full history →
+                </Link>
+              </div>
+            </div>
+          </div>
+
+          <RecentGenerations />
+        </div>
+      </section>
+
+      {/* =========================================================
+          LOADING
+      ========================================================== */}
+      {loading && (
+        <section className="mx-auto max-w-7xl px-6 pb-16">
+          <div className="grid gap-6 lg:grid-cols-[360px_1fr]">
+            <GenerationLoading step={loadingStep} />
+            <ResultSkeleton />
+          </div>
+        </section>
+      )}
+
+      {/* =========================================================
+          EMPTY STATE
+      ========================================================== */}
+      {!loading && !result && (
+        <section className="mx-auto max-w-4xl px-6 pb-24">
+          <div className="rounded-3xl border border-dashed border-gray-800 bg-gray-950/50 px-6 py-14 text-center">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl border border-gray-800 bg-gray-900 text-cyan-400">
+              ✦
+            </div>
+
+            <h3 className="mt-5 text-xl font-semibold text-white">
+              Your documentation workspace is ready
+            </h3>
+
+            <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-gray-500">
+              Enter a public GitHub repository above to analyze its codebase and
+              generate documentation automatically.
+            </p>
+          </div>
+        </section>
+      )}
+
+      {/* =========================================================
+          RESULTS
+      ========================================================== */}
+      {result && (
+        <section className="mx-auto max-w-7xl px-6 pb-24">
+          <div className="mb-6 rounded-2xl border border-gray-900 bg-gray-950/50 p-5">
+            <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+              <div>
+                <div className="flex flex-wrap items-center gap-3">
+                  <h2 className="text-2xl font-bold text-white">
+                    Generated Documentation
+                  </h2>
+
+                  {result.cached && (
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-green-500/20 bg-green-500/10 px-3 py-1 text-xs font-medium text-green-300">
+                      ⚡ Served from cache
+                    </span>
+                  )}
+                </div>
+
+                <div className="mt-2 flex flex-wrap items-center gap-2 text-sm">
+                  <span className="text-gray-400">
+                    {result.repository.fullName}
+                  </span>
+
+                  {result.repository.stars > 0 && (
+                    <span className="rounded-full border border-gray-800 bg-gray-900 px-2 py-0.5 text-xs text-gray-500">
+                      ★ {result.repository.stars}
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                <CopyButton text={result.documentation} />
+
+                <DownloadButton
+                  filename={`${result.repository.fullName.split('/')[1] || 'README'}.md`}
+                  content={result.documentation}
+                />
+
+                <ExportZipButton
+                  repoName={
+                    result.repository.fullName.split('/')[1] || 'project'
+                  }
+                  documentation={result.documentation}
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
+            <RepoSummary
+              repository={result.repository}
+              analysis={result.analysis}
+            />
+
+            <ResultsTabs documentation={result.documentation} />
+          </div>
+        </section>
+      )}
+
+      {/* =========================================================
+          FOOTER
+      ========================================================== */}
+      <footer className="border-t border-gray-900">
+        <div className="mx-auto max-w-7xl px-6 py-10">
+          <div className="flex flex-col gap-8 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <div className="flex items-center gap-2">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-cyan-500 text-xs font-black text-black">
+                  R
+                </div>
+
+                <span className="font-semibold text-white">
+                  ReadmePilot
+                </span>
+              </div>
+
+              <p className="mt-3 max-w-sm text-sm leading-6 text-gray-500">
+                AI-powered documentation generation for GitHub repositories.
+              </p>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-5 text-sm text-gray-500">
+              <Link
+                href="/"
+                className="transition hover:text-white"
+              >
+                Home
+              </Link>
+
+              <Link
+                href="/history"
+                className="transition hover:text-white"
+              >
+                History
+              </Link>
+
+              <a
+                href="https://github.com/Tanweer-ANS"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="transition hover:text-white"
+              >
+                GitHub
+              </a>
+            </div>
+          </div>
+
+          <div className="mt-8 border-t border-gray-900 pt-6 text-xs text-gray-600">
+            Built for developers who would rather write code than README files.
+          </div>
+        </div>
+      </footer>
+    </main>
+  )
+}
+
+function DashboardFallback() {
+  return (
+    <main className="min-h-screen bg-black text-white">
+      <div className="mx-auto flex min-h-screen max-w-7xl items-center justify-center px-6">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-gray-800 border-t-cyan-400" />
+      </div>
+    </main>
+  )
+}

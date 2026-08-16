@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { Clock } from 'lucide-react'
+import { useAuth } from '@clerk/nextjs'
 import { getRecentGenerations } from '@/services/history.service'
 
 type HistoryItem = {
@@ -14,15 +15,16 @@ type HistoryItem = {
 export function RecentGenerations() {
   const [items, setItems] = useState<HistoryItem[]>([])
   const [loading, setLoading] = useState(true)
+  const { userId } = useAuth()
 
   useEffect(() => {
-    getRecentGenerations(5)
+    getRecentGenerations(5, userId)
       .then(setItems)
       .catch((error) => {
         console.error('Failed to load generation history:', error)
       })
       .finally(() => setLoading(false))
-  }, [])
+  }, [userId])
 
   return (
     <div className="rounded-2xl border border-gray-800 bg-gray-950 p-5">

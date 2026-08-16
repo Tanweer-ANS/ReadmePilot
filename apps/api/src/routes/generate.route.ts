@@ -38,6 +38,13 @@ generateRouter.post('/', async (req, res) => {
   } catch (error: any) {
     console.error('Generation error:', error)
 
+    if (error.name === 'ZodError') {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid GitHub repository URL provided',
+      })
+    }
+
     const message = error?.message || 'Unknown error'
 
     if (message.includes('rate limit')) {

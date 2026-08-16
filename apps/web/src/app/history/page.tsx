@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { Search } from 'lucide-react'
+import { useAuth } from '@clerk/nextjs'
 import { HistoryCard } from '@/components/history-card'
 import {
   deleteGeneration,
@@ -21,16 +22,18 @@ export default function HistoryPage() {
   const [items, setItems] = useState<HistoryItem[]>([])
   const [query, setQuery] = useState('')
   const [loading, setLoading] = useState(true)
+  const { userId } = useAuth()
 
   useEffect(() => {
     loadHistory()
-  }, [])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId])
 
   const loadHistory = async () => {
     setLoading(true)
 
     try {
-      const data = await getRecentGenerations(50)
+      const data = await getRecentGenerations(50, userId)
       setItems(data)
     } finally {
       setLoading(false)
@@ -44,7 +47,7 @@ export default function HistoryPage() {
       return loadHistory()
     }
 
-    const results = await searchGenerations(value)
+    const results = await searchGenerations(value, userId)
     setItems(results)
   }
 

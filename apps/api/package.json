@@ -13,6 +13,7 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "@clerk/express": "^2.1.57",
     "@google/generative-ai": "^0.24.1",
     "@octokit/rest": "^22.0.1",
     "cors": "^2.8.6",

@@ -34,7 +34,12 @@ type GenerationState = {
   setError: (error: string | null) => void
   setResult: (result: GeneratedResult | null) => void
 
-  generateDocumentation: () => Promise<void>
+  /**
+   * token   — Clerk JWT obtained by calling `await getToken()` inside the
+   *           component before dispatching (hooks can't run inside a store).
+   * userId  — Clerk user ID (`auth.userId`) used to scope Supabase rows.
+   */
+  generateDocumentation: (token: string | null, userId: string | null) => Promise<void>
 }
 
 export const useGenerationStore = create<GenerationState>((set, get) => ({
@@ -54,7 +59,7 @@ export const useGenerationStore = create<GenerationState>((set, get) => ({
 
   setResult: (result) => set({ result }),
 
-  generateDocumentation: async () => {
+  generateDocumentation: async (token, userId) => {
     const { repoUrl } = get()
 
     if (!repoUrl.trim()) {
@@ -81,12 +86,12 @@ export const useGenerationStore = create<GenerationState>((set, get) => ({
       // Step 3: Framework detection
       set({ loadingStep: 3 })
 
-      // Actual API call
-      const result = await generateDocumentationApi(repoUrl)
+      // Actual API call — pass the Clerk token for backend auth
+      const result = await generateDocumentationApi(repoUrl, token)
 
-      // Save to Supabase
+      // Save to Supabase, scoped to this user
       try {
-        await saveGeneration(repoUrl, result)
+        await saveGeneration(repoUrl, result, userId)
       } catch (saveError) {
         console.error('Failed to save generation:', saveError)
       }
