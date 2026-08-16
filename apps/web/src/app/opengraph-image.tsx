@@ -1,12 +1,15 @@
 import { ImageResponse } from 'next/og'
 
-export const runtime = 'nodejs'
+export const runtime = 'edge'
 
-export const alt = 'ReadmePilot — AI-Powered GitHub Documentation Generator'
+export const alt =
+  'ReadmePilot — AI-Powered GitHub Documentation Generator'
+
 export const size = {
   width: 1200,
   height: 630,
 }
+
 export const contentType = 'image/png'
 
 export default function Image() {
@@ -18,19 +21,32 @@ export default function Image() {
           height: '100%',
           display: 'flex',
           flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
           background: '#000000',
           color: '#ffffff',
-          padding: '60px',
+          padding: '70px',
+          position: 'relative',
         }}
       >
+        {/* Glow */}
+        <div
+          style={{
+            position: 'absolute',
+            width: '700px',
+            height: '700px',
+            borderRadius: '9999px',
+            background:
+              'radial-gradient(circle, rgba(6,182,212,0.18), transparent 65%)',
+            top: '-350px',
+            left: '250px',
+          }}
+        />
+
+        {/* Branding */}
         <div
           style={{
             display: 'flex',
             alignItems: 'center',
             gap: '18px',
-            marginBottom: '30px',
           }}
         >
           <div
@@ -43,8 +59,8 @@ export default function Image() {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontSize: '34px',
-              fontWeight: 800,
+              fontSize: '36px',
+              fontWeight: 900,
             }}
           >
             R
@@ -52,7 +68,7 @@ export default function Image() {
 
           <div
             style={{
-              fontSize: '42px',
+              fontSize: '38px',
               fontWeight: 800,
             }}
           >
@@ -60,26 +76,47 @@ export default function Image() {
           </div>
         </div>
 
+        {/* Main content */}
         <div
           style={{
-            fontSize: '58px',
-            fontWeight: 800,
-            textAlign: 'center',
-            lineHeight: 1.1,
-            maxWidth: '950px',
+            display: 'flex',
+            flexDirection: 'column',
+            marginTop: '80px',
           }}
         >
-          Turn GitHub repositories into great documentation.
+          <div
+            style={{
+              fontSize: '58px',
+              fontWeight: 800,
+              lineHeight: 1.08,
+              maxWidth: '1000px',
+            }}
+          >
+            Turn GitHub repositories into great documentation.
+          </div>
+
+          <div
+            style={{
+              marginTop: '30px',
+              fontSize: '26px',
+              color: '#9ca3af',
+            }}
+          >
+            AI-powered README and developer documentation generator
+          </div>
         </div>
 
+        {/* Bottom */}
         <div
           style={{
-            marginTop: '28px',
-            fontSize: '24px',
-            color: '#9ca3af',
+            display: 'flex',
+            alignItems: 'center',
+            marginTop: 'auto',
+            fontSize: '21px',
+            color: '#6b7280',
           }}
         >
-          AI-powered GitHub documentation generator
+          Analyze • Generate • Document
         </div>
       </div>
     ),

@@ -393,30 +393,52 @@ function HomePageContent() {
           FOOTER
       ========================================================== */}
       <footer className="border-t border-gray-900">
-        <div className="mx-auto flex max-w-7xl flex-col gap-4 px-6 py-8 text-sm text-gray-500 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <span className="font-semibold text-gray-300">
-              ReadmePilot
-            </span>{' '}
-            — AI-powered GitHub documentation.
+        <div className="mx-auto max-w-7xl px-6 py-10">
+          <div className="flex flex-col gap-8 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <div className="flex items-center gap-2">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-cyan-500 text-xs font-black text-black">
+                  R
+                </div>
+
+                <span className="font-semibold text-white">
+                  ReadmePilot
+                </span>
+              </div>
+
+              <p className="mt-3 max-w-sm text-sm leading-6 text-gray-500">
+                AI-powered documentation generation for GitHub repositories.
+              </p>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-5 text-sm text-gray-500">
+              <Link
+                href="/"
+                className="transition hover:text-white"
+              >
+                Home
+              </Link>
+
+              <Link
+                href="/history"
+                className="transition hover:text-white"
+              >
+                History
+              </Link>
+
+              <a
+                href="https://github.com/Tanweer-ANS"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="transition hover:text-white"
+              >
+                GitHub
+              </a>
+            </div>
           </div>
 
-          <div className="flex items-center gap-5">
-            <Link
-              href="/history"
-              className="transition hover:text-white"
-            >
-              History
-            </Link>
-
-            <a
-              href="https://github.com/Tanweer-ANS"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="transition hover:text-white"
-            >
-              GitHub
-            </a>
+          <div className="mt-8 border-t border-gray-900 pt-6 text-xs text-gray-600">
+            Built for developers who would rather write code than README files.
           </div>
         </div>
       </footer>
